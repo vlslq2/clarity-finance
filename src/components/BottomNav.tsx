@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { 
   Home, 
@@ -6,7 +6,7 @@ import {
   Target, 
   MoreHorizontal,
   Grid3X3, 
-  Repeat, 
+   
   BarChart3, 
   Calendar,
   X
@@ -21,7 +21,7 @@ const primaryNavItems = [
 
 const moreNavItems = [
   { path: '/categories', icon: Grid3X3, label: t('nav.categories') },
-  { path: '/recurring', icon: Repeat, label: t('nav.recurring') },
+  
   { path: '/reports', icon: BarChart3, label: t('nav.reports') },
   { path: '/calendar', icon: Calendar, label: t('nav.calendar') }
 ];

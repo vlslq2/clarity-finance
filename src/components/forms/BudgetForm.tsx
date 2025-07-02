@@ -3,6 +3,7 @@ import { useApp } from '../../context/AppContext';
 import Button from '../Button';
 import { X, Target } from 'lucide-react';
 import { api } from '../../lib/supabase';
+import { t } from '../../i18n';
 
 interface BudgetFormProps {
   isOpen: boolean;
@@ -235,7 +236,7 @@ export default function BudgetForm({ isOpen, onClose, editingBudget }: BudgetFor
               loading={loading}
               fullWidth
             >
-              {editingBudget ? 'Actualizează' : 'Creează'} bugetul
+              {editingBudget ? t('common.update') : t('common.create')}
             </Button>
           </div>
         </form>

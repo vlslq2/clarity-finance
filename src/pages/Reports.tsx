@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import Header from '../components/Header';
 import Card from '../components/Card';
 import Button from '../components/Button';
 import { Download, TrendingUp, TrendingDown, PieChart } from 'lucide-react';
 import { startOfMonth, endOfMonth, format, subMonths } from 'date-fns';
+import { t } from '../i18n';
 
 export default function Reports() {
   const { state } = useApp();
@@ -85,7 +86,7 @@ export default function Reports() {
   return (
     <div className="md:ml-64">
       <Header 
-        title="Reports" 
+        title={t('reports.title')} 
         action={
           <Button 
             onClick={exportData}
@@ -94,7 +95,7 @@ export default function Reports() {
             className="hidden md:flex"
           >
             <Download size={16} className="mr-1" />
-            Export
+            {t('reports.export')}
           </Button>
         }
       />
@@ -104,10 +105,10 @@ export default function Reports() {
         <Card>
           <div className="flex flex-wrap gap-2">
             {[
-              { key: 'thisMonth', label: 'This Month' },
-              { key: 'lastMonth', label: 'Last Month' },
-              { key: 'last3Months', label: 'Last 3 Months' },
-              { key: 'thisYear', label: 'This Year' }
+              { key: 'thisMonth', label: t('reports.thisMonth') },
+              { key: 'lastMonth', label: t('reports.lastMonth') },
+              { key: 'last3Months', label: t('reports.last3Months') },
+              { key: 'thisYear', label: t('reports.thisYear') }
             ].map(period => (
               <button
                 key={period.key}
@@ -130,7 +131,7 @@ export default function Reports() {
             <div className="flex items-center">
               <TrendingUp className="text-green-500 mr-4" size={32} />
               <div>
-                <p className="text-sm text-gray-600">Total Income</p>
+                <p className="text-sm text-gray-600">{t('reports.totalIncome')}</p>
                 <p className="text-2xl font-bold text-green-600">${totalIncome.toFixed(2)}</p>
               </div>
             </div>
@@ -140,7 +141,7 @@ export default function Reports() {
             <div className="flex items-center">
               <TrendingDown className="text-red-500 mr-4" size={32} />
               <div>
-                <p className="text-sm text-gray-600">Total Expenses</p>
+                <p className="text-sm text-gray-600">{t('reports.totalExpenses')}</p>
                 <p className="text-2xl font-bold text-red-600">${totalExpenses.toFixed(2)}</p>
               </div>
             </div>
@@ -150,7 +151,7 @@ export default function Reports() {
             <div className="flex items-center">
               <PieChart className={`${netIncome >= 0 ? 'text-green-500' : 'text-red-500'} mr-4`} size={32} />
               <div>
-                <p className="text-sm text-gray-600">Net Income</p>
+                <p className="text-sm text-gray-600">{t('reports.netIncome')}</p>
                 <p className={`text-2xl font-bold ${netIncome >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                   ${netIncome.toFixed(2)}
                 </p>
@@ -161,12 +162,12 @@ export default function Reports() {
 
         {/* Top Spending Categories */}
         <Card>
-          <h3 className="text-lg font-semibold mb-4">Top Spending Categories</h3>
+          <h3 className="text-lg font-semibold mb-4">{t('reports.topSpendingCategories')}</h3>
           {topCategories.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">No expense data for this period</p>
+            <p className="text-gray-500 text-center py-8">{t('reports.noExpenseData')}</p>
           ) : (
             <div className="space-y-4">
-              {topCategories.map(([categoryName, amount], index) => {
+              {topCategories.map(([categoryName, amount]) => {
                 const percentage = totalExpenses > 0 ? (amount / totalExpenses) * 100 : 0;
                 const category = categories.find(c => c.name === categoryName);
                 
@@ -209,29 +210,29 @@ export default function Reports() {
 
         {/* Transaction Summary */}
         <Card>
-          <h3 className="text-lg font-semibold mb-4">Transaction Summary</h3>
+          <h3 className="text-lg font-semibold mb-4">{t('reports.transactionSummary')}</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center">
               <p className="text-2xl font-bold text-gray-900">{filteredTransactions.length}</p>
-              <p className="text-sm text-gray-600">Total Transactions</p>
+              <p className="text-sm text-gray-600">{t('reports.totalTransactions')}</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-green-600">
                 {filteredTransactions.filter(t => t.type === 'income').length}
               </p>
-              <p className="text-sm text-gray-600">Income Transactions</p>
+              <p className="text-sm text-gray-600">{t('reports.incomeTransactions')}</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-red-600">
                 {filteredTransactions.filter(t => t.type === 'expense').length}
               </p>
-              <p className="text-sm text-gray-600">Expense Transactions</p>
+              <p className="text-sm text-gray-600">{t('reports.expenseTransactions')}</p>
             </div>
             <div className="text-center">
               <p className="text-2xl font-bold text-gray-900">
                 {totalExpenses > 0 ? (totalIncome / totalExpenses * 100).toFixed(0) : 0}%
               </p>
-              <p className="text-sm text-gray-600">Savings Rate</p>
+              <p className="text-sm text-gray-600">{t('reports.savingsRate')}</p>
             </div>
           </div>
         </Card>
@@ -240,7 +241,7 @@ export default function Reports() {
         <div className="md:hidden">
           <Button onClick={exportData} fullWidth variant="secondary">
             <Download size={16} className="mr-2" />
-            Export Report
+            {t('reports.exportReport')}
           </Button>
         </div>
       </div>

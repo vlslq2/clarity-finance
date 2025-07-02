@@ -296,7 +296,7 @@ export default function TransactionForm({ isOpen, onClose, editingTransaction }:
               {loading ? (
                 <LoadingSpinner size="sm" className="mr-2" />
               ) : null}
-              {editingTransaction ? 'Actualizează' : 'Adaugă'} tranzacția
+              {editingTransaction ? t('common.update') : t('common.add')}
             </Button>
           </div>
         </form>

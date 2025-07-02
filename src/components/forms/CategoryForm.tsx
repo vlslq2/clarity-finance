@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useApp } from '../../context/AppContext';
 import Button from '../Button';
-import { X, Palette } from 'lucide-react';
+import { X } from 'lucide-react';
 import { api } from '../../lib/supabase';
+import { t } from '../../i18n';
 
 interface CategoryFormProps {
   isOpen: boolean;
@@ -436,7 +437,7 @@ export default function CategoryForm({ isOpen, onClose, editingCategory }: Categ
               loading={loading}
               fullWidth
             >
-              {editingCategory ? 'Actualizează' : 'Adaugă'} categoria
+              {editingCategory ? t('common.update') : t('common.add')}
             </Button>
           </div>
         </form>

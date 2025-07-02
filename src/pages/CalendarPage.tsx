@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import Header from '../components/Header';
 import CalendarList from '../components/calendar/CalendarList';
 import CalendarCarousel from '../components/calendar/CalendarCarousel';
 import { List, Calendar as CalendarIcon } from 'lucide-react';
+import { t } from '../i18n';
 
 type CalendarView = 'list' | 'carousel';
 
@@ -14,8 +15,8 @@ export default function CalendarPage() {
   const [currentView, setCurrentView] = useState<CalendarView>('list');
 
   const viewOptions = [
-    { key: 'list' as CalendarView, label: 'List', icon: List },
-    { key: 'carousel' as CalendarView, label: 'Carousel', icon: CalendarIcon }
+    { key: 'list' as CalendarView, label: t('calendar.list'), icon: List },
+    { key: 'carousel' as CalendarView, label: t('calendar.carousel'), icon: CalendarIcon }
   ];
 
   const renderCalendarView = () => {
@@ -39,7 +40,7 @@ export default function CalendarPage() {
   return (
     <div className="md:ml-64">
       <Header 
-        title="Calendar" 
+        title={t('calendar.title')} 
         action={
           <div className="flex space-x-1 bg-gray-100 rounded-xl p-1">
             {viewOptions.map(({ key, label, icon: Icon }) => (
