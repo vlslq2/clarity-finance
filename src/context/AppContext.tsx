@@ -1,12 +1,13 @@
 import React, { createContext, useContext, useReducer, ReactNode } from 'react';
-import { Transaction, Category, Budget, RecurringTransaction } from '../types';
-import { format, addDays, addWeeks, addMonths, addYears } from 'date-fns';
+import { Transaction, Category, Budget, RecurringTransaction, Pocket } from '../types';
+
 
 interface AppState {
   transactions: Transaction[];
   categories: Category[];
   budgets: Budget[];
   recurringTransactions: RecurringTransaction[];
+  pockets: Pocket[];
 }
 
 type AppAction =
@@ -22,16 +23,21 @@ type AppAction =
   | { type: 'ADD_RECURRING'; payload: RecurringTransaction }
   | { type: 'UPDATE_RECURRING'; payload: RecurringTransaction }
   | { type: 'DELETE_RECURRING'; payload: string }
+  | { type: 'ADD_POCKET'; payload: Pocket }
+  | { type: 'UPDATE_POCKET'; payload: Pocket }
+  | { type: 'DELETE_POCKET'; payload: string }
   | { type: 'SET_TRANSACTIONS'; payload: Transaction[] }
   | { type: 'SET_CATEGORIES'; payload: Category[] }
   | { type: 'SET_BUDGETS'; payload: Budget[] }
-  | { type: 'SET_RECURRING'; payload: RecurringTransaction[] };
+  | { type: 'SET_RECURRING'; payload: RecurringTransaction[] }
+  | { type: 'SET_POCKETS'; payload: Pocket[] };
 
 const initialState: AppState = {
   transactions: [],
   categories: [],
   budgets: [],
-  recurringTransactions: []
+  recurringTransactions: [],
+  pockets: []
 };
 
 function appReducer(state: AppState, action: AppAction): AppState {
@@ -55,6 +61,11 @@ function appReducer(state: AppState, action: AppAction): AppState {
       return {
         ...state,
         recurringTransactions: action.payload
+      };
+    case 'SET_POCKETS':
+      return {
+        ...state,
+        pockets: action.payload
       };
     case 'ADD_TRANSACTION':
       return {
@@ -123,6 +134,23 @@ function appReducer(state: AppState, action: AppAction): AppState {
       return {
         ...state,
         recurringTransactions: state.recurringTransactions.filter(r => r.id !== action.payload)
+      };
+    case 'ADD_POCKET':
+      return {
+        ...state,
+        pockets: [...state.pockets, action.payload]
+      };
+    case 'UPDATE_POCKET':
+      return {
+        ...state,
+        pockets: state.pockets.map(p => 
+          p.id === action.payload.id ? action.payload : p
+        )
+      };
+    case 'DELETE_POCKET':
+      return {
+        ...state,
+        pockets: state.pockets.filter(p => p.id !== action.payload)
       };
     default:
       return state;

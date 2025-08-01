@@ -7,6 +7,7 @@ export interface Transaction {
   type: 'income' | 'expense';
   recurring?: boolean;
   recurringId?: string;
+  pocketId?: string;
 }
 
 export interface Category {
@@ -34,4 +35,13 @@ export interface RecurringTransaction {
   frequency: 'daily' | 'weekly' | 'monthly' | 'yearly';
   nextDate: Date;
   isActive: boolean;
+}
+
+export interface Pocket {
+  id: string;
+  name: string;
+  balance: number;
+  icon?: string;
+  color?: string;
+  is_default?: boolean;
 }

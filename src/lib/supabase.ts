@@ -445,5 +445,74 @@ export const api = {
       if (!response.ok) throw new Error('Failed to update user preferences')
       return await response.json()
     }
+  },
+
+  // Pockets
+  pockets: {
+    getAll: async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      const response = await fetch(`${supabaseUrl}/functions/v1/pockets`, {
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`
+        }
+      })
+      
+      if (!response.ok) throw new Error('Failed to fetch pockets')
+      return await response.json()
+    },
+    
+    create: async (pocket: any) => {
+      const { data: { session } } = await supabase.auth.getSession()
+      const response = await fetch(`${supabaseUrl}/functions/v1/pockets`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(pocket)
+      })
+      
+      if (!response.ok) throw new Error('Failed to create pocket')
+      return await response.json()
+    },
+    
+    update: async (pocket: any) => {
+      const { data: { session } } = await supabase.auth.getSession()
+      const response = await fetch(`${supabaseUrl}/functions/v1/pockets`, {
+        method: 'PATCH',
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(pocket)
+      })
+      
+      if (!response.ok) throw new Error('Failed to update pocket')
+      return await response.json()
+    },
+
+    delete: async (id: string) => {
+      const { data: { session } } = await supabase.auth.getSession()
+      const response = await fetch(`${supabaseUrl}/functions/v1/pockets`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ id })
+      })
+      
+      if (!response.ok) throw new Error('Failed to delete pocket')
+      return await response.json()
+    },
+
+    transfer: async (from_pocket_id: string, to_pocket_id: string, amount: number) => {
+      const { error } = await supabase.rpc('transfer_between_pockets', {
+        from_pocket_id,
+        to_pocket_id,
+        amount
+      })
+      if (error) throw error
+    }
   }
 }

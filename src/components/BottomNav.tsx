@@ -6,7 +6,7 @@ import {
   Target, 
   MoreHorizontal,
   Grid3X3, 
-   
+  Wallet,
   BarChart3, 
   Calendar,
   X
@@ -21,7 +21,7 @@ const primaryNavItems = [
 
 const moreNavItems = [
   { path: '/categories', icon: Grid3X3, label: t('nav.categories') },
-  
+  { path: '/pockets', icon: Wallet, label: t('nav.pockets') },
   { path: '/reports', icon: BarChart3, label: t('nav.reports') },
   { path: '/calendar', icon: Calendar, label: t('nav.calendar') }
 ];

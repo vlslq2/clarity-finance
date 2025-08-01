@@ -15,13 +15,16 @@ interface TransactionFormProps {
 
 export default function TransactionForm({ isOpen, onClose, editingTransaction }: TransactionFormProps) {
   const { state, dispatch } = useApp();
-  const { categories } = state;
+  const { categories, pockets } = state;
   const toast = useToastContext();
   
+  const defaultPocket = pockets.find(p => p.is_default) || pockets[0];
+
   const [formData, setFormData] = useState({
     amount: '',
     description: '',
     category_id: '',
+    pocket_id: defaultPocket?.id || '',
     type: 'expense' as 'income' | 'expense',
     date: new Date().toISOString().split('T')[0]
   });
@@ -31,11 +34,13 @@ export default function TransactionForm({ isOpen, onClose, editingTransaction }:
 
   // Update form data when editingTransaction changes
   useEffect(() => {
+    const defaultPocket = pockets.find(p => p.is_default) || pockets[0];
     if (editingTransaction) {
       setFormData({
         amount: editingTransaction.amount.toString(),
         description: editingTransaction.description,
         category_id: editingTransaction.category,
+        pocket_id: editingTransaction.pocketId || defaultPocket?.id || '',
         type: editingTransaction.type,
         date: editingTransaction.date.toISOString().split('T')[0]
       });
@@ -44,12 +49,13 @@ export default function TransactionForm({ isOpen, onClose, editingTransaction }:
         amount: '',
         description: '',
         category_id: '',
+        pocket_id: defaultPocket?.id || '',
         type: 'expense',
         date: new Date().toISOString().split('T')[0]
       });
     }
     setErrors({});
-  }, [editingTransaction, isOpen]);
+  }, [editingTransaction, isOpen, pockets]);
 
   const filteredCategories = categories.filter(c => c.type === formData.type);
 
@@ -59,15 +65,15 @@ export default function TransactionForm({ isOpen, onClose, editingTransaction }:
     if (!formData.amount || parseFloat(formData.amount) <= 0) {
       newErrors.amount = 'Suma trebuie să fie mai mare de 0';
     }
-
     if (!formData.description.trim()) {
       newErrors.description = 'Descrierea este obligatorie';
     }
-
     if (!formData.category_id) {
       newErrors.category_id = 'Categoria este obligatorie';
     }
-
+    if (!formData.pocket_id) {
+      newErrors.pocket_id = 'Portofelul este obligatoriu';
+    }
     if (!formData.date) {
       newErrors.date = 'Data este obligatorie';
     }
@@ -101,7 +107,8 @@ export default function TransactionForm({ isOpen, onClose, editingTransaction }:
         dispatch({ type: 'UPDATE_TRANSACTION', payload: {
           ...updatedTransaction,
           date: new Date(updatedTransaction.date),
-          category: updatedTransaction.category_id
+          category: updatedTransaction.category_id,
+          pocketId: updatedTransaction.pocket_id
         }});
         toast.success('Tranzacția a fost actualizată cu succes');
       } else {
@@ -109,7 +116,8 @@ export default function TransactionForm({ isOpen, onClose, editingTransaction }:
         dispatch({ type: 'ADD_TRANSACTION', payload: {
           ...newTransaction,
           date: new Date(newTransaction.date),
-          category: newTransaction.category_id
+          category: newTransaction.category_id,
+          pocketId: newTransaction.pocket_id
         }});
         toast.success('Tranzacția a fost adăugată cu succes');
       }
@@ -227,6 +235,31 @@ export default function TransactionForm({ isOpen, onClose, editingTransaction }:
             />
             {errors.description && (
               <p className="text-red-600 text-sm mt-1">{errors.description}</p>
+            )}
+          </div>
+
+          {/* Pocket */}
+          <div>
+            <label htmlFor="pocket" className="block text-sm font-medium text-gray-700 mb-2">
+              Portofel
+            </label>
+            <select
+              id="pocket"
+              value={formData.pocket_id}
+              onChange={(e) => setFormData({ ...formData, pocket_id: e.target.value })}
+              disabled={loading}
+              className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
+                errors.pocket_id ? 'border-red-300' : 'border-gray-200'
+              } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+            >
+              {pockets.map(pocket => (
+                <option key={pocket.id} value={pocket.id}>
+                  {pocket.name}
+                </option>
+              ))}
+            </select>
+            {errors.pocket_id && (
+              <p className="text-red-600 text-sm mt-1">{errors.pocket_id}</p>
             )}
           </div>
 

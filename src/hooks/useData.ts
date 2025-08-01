@@ -22,7 +22,8 @@ export function useData() {
         const formattedTransactions = transactions.map((t: any) => ({
           ...t,
           date: new Date(t.date),
-          category: t.category_id
+          category: t.category_id,
+          pocketId: t.pocket_id
         }));
         dispatch({ type: 'SET_TRANSACTIONS', payload: formattedTransactions });
 
@@ -55,6 +56,10 @@ export function useData() {
           isActive: r.is_active
         }));
         dispatch({ type: 'SET_RECURRING', payload: formattedRecurring });
+
+        // Load pockets
+        const pockets = await api.pockets.getAll();
+        dispatch({ type: 'SET_POCKETS', payload: pockets });
 
       } catch (error: any) {
         console.error('Failed to load data:', error);

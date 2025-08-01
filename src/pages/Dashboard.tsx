@@ -1,15 +1,18 @@
-import React from 'react';
+
 import { useApp } from '../context/AppContext';
 import Card from '../components/Card';
 import Header from '../components/Header';
-import { TrendingUp, TrendingDown, DollarSign, Target } from 'lucide-react';
+import { TrendingUp, TrendingDown, Wallet } from 'lucide-react';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { t } from '../i18n';
 import { getCategoryEmoji } from '../utils/categoryIcons';
 
 export default function Dashboard() {
   const { state } = useApp();
-  const { transactions, budgets, categories } = state;
+  const { transactions, budgets, categories, pockets } = state;
+
+  // Calculate total balance from all pockets
+  const totalBalance = pockets.reduce((sum, p) => sum + p.balance, 0);
 
   // Calculate current month's data
   const now = new Date();
@@ -27,8 +30,6 @@ export default function Dashboard() {
   const totalExpenses = currentMonthTransactions
     .filter(t => t.type === 'expense')
     .reduce((sum, t) => sum + Math.abs(t.amount), 0);
-
-  const balance = totalIncome - totalExpenses;
 
   // Top spending categories
   const categorySpending = currentMonthTransactions
@@ -55,21 +56,21 @@ export default function Dashboard() {
         <Card>
           <div className="text-center">
             <p className="text-gray-600 mb-2">{t('dashboard.currentBalance')}</p>
-            <h2 className={`text-4xl font-bold mb-4 ${balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-              {balance.toFixed(2)} RON
+            <h2 className={`text-4xl font-bold mb-4 ${totalBalance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              {totalBalance.toFixed(2)} RON
             </h2>
             <div className="grid grid-cols-2 gap-4 mt-6">
               <div className="text-center">
                 <div className="flex items-center justify-center mb-2">
                   <TrendingUp className="text-green-600 mr-2" size={20} />
-                  <span className="text-sm text-gray-600">{t('common.income')}</span>
+                  <span className="text-sm text-gray-600">{t('common.income')} (This Month)</span>
                 </div>
                 <p className="text-xl font-semibold text-green-600">{totalIncome.toFixed(2)} RON</p>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center mb-2">
                   <TrendingDown className="text-red-600 mr-2" size={20} />
-                  <span className="text-sm text-gray-600">{t('common.expense')}</span>
+                  <span className="text-sm text-gray-600">{t('common.expense')} (This Month)</span>
                 </div>
                 <p className="text-xl font-semibold text-red-600">{totalExpenses.toFixed(2)} RON</p>
               </div>
@@ -77,28 +78,21 @@ export default function Dashboard() {
           </div>
         </Card>
 
-        {/* Quick Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <Card padding="sm">
-            <div className="flex items-center">
-              <DollarSign className="text-gray-400 mr-3" size={24} />
-              <div>
-                <p className="text-sm text-gray-600">{t('nav.transactions')}</p>
-                <p className="text-lg font-semibold">{currentMonthTransactions.length}</p>
+        {/* Pockets List */}
+        <Card>
+          <h3 className="text-lg font-semibold mb-4">{t('nav.pockets')}</h3>
+          <div className="space-y-3">
+            {pockets.map(pocket => (
+              <div key={pocket.id} className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <Wallet size={18} className="mr-3 text-gray-500" />
+                  <span className="font-medium">{pocket.name}</span>
+                </div>
+                <span className="font-semibold">{pocket.balance.toFixed(2)} RON</span>
               </div>
-            </div>
-          </Card>
-          
-          <Card padding="sm">
-            <div className="flex items-center">
-              <Target className="text-gray-400 mr-3" size={24} />
-              <div>
-                <p className="text-sm text-gray-600">{t('nav.budgets')}</p>
-                <p className="text-lg font-semibold">{budgets.length}</p>
-              </div>
-            </div>
-          </Card>
-        </div>
+            ))}
+          </div>
+        </Card>
 
         {/* Top Spending Categories */}
         {topCategories.length > 0 && (

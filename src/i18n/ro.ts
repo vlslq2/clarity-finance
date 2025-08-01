@@ -7,7 +7,8 @@ export const ro = {
     categories: 'Categorii',
     recurring: 'Recurente',
     reports: 'Rapoarte',
-    calendar: 'Calendar'
+    calendar: 'Calendar',
+    pockets: 'Portofele'
   },
 
   // Common
@@ -274,6 +275,22 @@ export const ro = {
     saving: 'Se salvează...',
     deleting: 'Se șterge...',
     updating: 'Se actualizează...'
+  },
+
+  // Pockets
+  pockets: {
+    title: 'Portofele',
+    addPocket: 'Adaugă Portofel',
+    editPocket: 'Editează Portofelul',
+    currentBalance: 'Sold Curent',
+    noPockets: 'Nu ai încă niciun portofel.',
+    pocketName: 'Nume Portofel',
+    initialBalance: 'Sold Inițial',
+    createFirstPocket: 'Creează Primul Tău Portofel',
+    transfer: 'Transferă',
+    transferBetweenPockets: 'Transfer între Portofele',
+    from: 'De la',
+    to: 'La'
   }
 };
 

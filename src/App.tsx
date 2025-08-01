@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AppProvider } from './context/AppContext';
 import { ToastProvider } from './context/ToastContext';
@@ -13,6 +13,7 @@ import Categories from './pages/Categories';
 import Recurring from './pages/Recurring';
 import Reports from './pages/Reports';
 import CalendarPage from './pages/CalendarPage';
+import PocketsPage from './pages/Pockets';
 
 function AppContent() {
   useData(); // Load data from Supabase
@@ -28,6 +29,7 @@ function AppContent() {
           <Route path="/recurring" element={<Recurring />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/calendar" element={<CalendarPage />} />
+          <Route path="/pockets" element={<PocketsPage />} />
         </Routes>
       </Layout>
     </Router>
