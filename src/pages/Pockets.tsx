@@ -3,7 +3,7 @@ import Header from '../components/Header';
 import { useApp } from '../context/AppContext';
 import Card from '../components/Card';
 import Button from '../components/Button';
-import { Plus, Trash2, ArrowRightLeft } from 'lucide-react';
+import { Plus, Trash2, ArrowRightLeft, Edit2 } from 'lucide-react';
 import { t } from '../i18n';
 import PocketForm from '../components/forms/PocketForm';
 import TransferForm from '../components/forms/TransferForm';
@@ -18,6 +18,7 @@ export default function PocketsPage() {
   const [isPocketFormOpen, setIsPocketFormOpen] = useState(false);
   const [isTransferFormOpen, setIsTransferFormOpen] = useState(false);
   const [editingPocket, setEditingPocket] = useState<Pocket | undefined>(undefined);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const visiblePockets = pockets.filter(p => !p.is_default);
 
@@ -37,6 +38,7 @@ export default function PocketsPage() {
       return;
     }
     if (window.confirm(`Are you sure you want to delete the pocket "${pocket.name}"? All its transactions will be moved to your default pocket.`)) {
+      setDeletingId(pocket.id);
       try {
         await api.pockets.delete(pocket.id);
         dispatch({ type: 'DELETE_POCKET', payload: pocket.id });
@@ -44,6 +46,8 @@ export default function PocketsPage() {
       } catch (err) {
         const error = err instanceof Error ? err : new Error(String(err));
         toast.error('Failed to delete pocket', error.message);
+      } finally {
+        setDeletingId(null);
       }
     }
   };
@@ -54,11 +58,11 @@ export default function PocketsPage() {
         title={t('pockets.title')}
         action={
           <div className="flex space-x-2">
-            <Button onClick={() => setIsTransferFormOpen(true)} variant="secondary">
+            <Button onClick={() => setIsTransferFormOpen(true)} variant="secondary" size="sm">
               <ArrowRightLeft size={16} className="mr-2" />
               {t('pockets.transfer')}
             </Button>
-            <Button onClick={handleAddClick}>
+            <Button onClick={handleAddClick} size="sm">
               <Plus size={16} className="mr-2" />
               {t('pockets.addPocket')}
             </Button>
@@ -66,39 +70,61 @@ export default function PocketsPage() {
         }
       />
       <div className="p-4 md:p-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {visiblePockets.map(pocket => (
-            <Card key={pocket.id} onClick={() => handleEditClick(pocket)} className="cursor-pointer hover:shadow-lg transition-shadow">
-              <div className="flex justify-between items-start">
-                <div>
-                  <p className="text-lg font-semibold">{pocket.name}</p>
-                  <p className="text-sm text-gray-500">{t('pockets.currentBalance')}</p>
-                </div>
-                <div className="flex items-center">
-                  <div className="text-2xl font-bold mr-4">
-                    ${pocket.balance.toFixed(2)}
+        <div className="space-y-3">
+          {visiblePockets.map(pocket => {
+            const isDeleting = deletingId === pocket.id;
+            return (
+              <Card key={pocket.id} padding="sm" className="transition-all duration-200 hover:shadow-md">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold text-gray-900 truncate pr-2">{pocket.name}</h3>
+                      <p className="text-lg font-bold flex-shrink-0 text-gray-800">
+                        {pocket.balance.toFixed(2)} RON
+                      </p>
+                    </div>
+                    <div className="flex items-center justify-between mt-1">
+                      <span className="text-sm text-gray-600 truncate">{t('pockets.currentBalance')}</span>
+                    </div>
                   </div>
-                  {!pocket.is_default && (
-                    <button 
-                      onClick={(e) => { e.stopPropagation(); handleDeleteClick(pocket); }} 
-                      className="text-gray-400 hover:text-red-500"
+                  <div className="flex space-x-1 ml-3 flex-shrink-0">
+                    <button
+                      onClick={() => handleEditClick(pocket)}
+                      disabled={isDeleting}
+                      className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
                     >
-                      <Trash2 size={18} />
+                      <Edit2 size={14} />
                     </button>
-                  )}
+                    <button
+                      onClick={() => handleDeleteClick(pocket)}
+                      disabled={isDeleting}
+                      className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                    >
+                      {isDeleting ? (
+                        <div className="w-3.5 h-3.5 animate-spin rounded-full border-2 border-gray-300 border-t-red-500" />
+                      ) : (
+                        <Trash2 size={14} />
+                      )}
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </Card>
-          ))}
+              </Card>
+            );
+          })}
         </div>
 
         {visiblePockets.length === 0 && (
-          <div className="text-center py-16">
-            <p className="text-gray-500">{t('pockets.noPockets')}</p>
-            <Button onClick={handleAddClick} className="mt-4">
-              {t('pockets.createFirstPocket')}
+          <Card className="text-center py-12">
+            <div className="text-gray-400 mb-4">
+              <Plus size={48} className="mx-auto" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-600 mb-2">{t('pockets.noPockets')}</h3>
+            <p className="text-gray-500 mb-6">{t('pockets.createFirstPocket')}</p>
+            <Button onClick={handleAddClick}>
+              <Plus size={16} className="mr-2" />
+              {t('pockets.addPocket')}
             </Button>
-          </div>
+          </Card>
         )}
       </div>
       
