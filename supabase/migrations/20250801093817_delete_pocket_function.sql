@@ -3,7 +3,7 @@ CREATE OR REPLACE FUNCTION public.delete_pocket_and_reassign_transactions(
 )
 RETURNS void
 LANGUAGE plpgsql
-SECURITY DEFINER
+SECURITY INVOKER
 AS $$
 DECLARE
     v_user_id uuid;
