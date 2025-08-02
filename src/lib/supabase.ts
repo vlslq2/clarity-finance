@@ -507,12 +507,21 @@ export const api = {
     },
 
     transfer: async (from_pocket_id: string, to_pocket_id: string, amount: number) => {
-      const { error } = await supabase.rpc('transfer_between_pockets', {
-        from_pocket_id,
-        to_pocket_id,
-        amount
+      const { data: { session } } = await supabase.auth.getSession()
+      const response = await fetch(`${supabaseUrl}/functions/v1/pockets/transfer`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ from_pocket_id, to_pocket_id, amount })
       })
-      if (error) throw error
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error)
+      }
+      return await response.json()
     }
   }
 }
