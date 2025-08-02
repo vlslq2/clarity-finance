@@ -17,6 +17,8 @@ export default function TransferForm({ isOpen, onClose }: TransferFormProps) {
   const { pockets } = state;
   const toast = useToastContext();
   
+  const visiblePockets = pockets.filter(p => !p.is_default);
+
   const [formData, setFormData] = useState({
     from_pocket_id: '',
     to_pocket_id: '',
@@ -27,10 +29,10 @@ export default function TransferForm({ isOpen, onClose }: TransferFormProps) {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    if (isOpen && pockets.length > 1) {
+    if (isOpen && visiblePockets.length > 1) {
       setFormData({
-        from_pocket_id: pockets[0].id,
-        to_pocket_id: pockets[1].id,
+        from_pocket_id: visiblePockets[0].id,
+        to_pocket_id: visiblePockets[1].id,
         amount: '',
       });
     }
@@ -102,7 +104,7 @@ export default function TransferForm({ isOpen, onClose }: TransferFormProps) {
               required
               className="w-full px-4 py-3 border border-gray-200 rounded-xl"
             >
-              {pockets.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+              {visiblePockets.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
           </div>
 
@@ -117,7 +119,7 @@ export default function TransferForm({ isOpen, onClose }: TransferFormProps) {
               required
               className="w-full px-4 py-3 border border-gray-200 rounded-xl"
             >
-              {pockets.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+              {visiblePockets.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
             </select>
           </div>
 

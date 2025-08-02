@@ -18,7 +18,8 @@ export default function TransactionForm({ isOpen, onClose, editingTransaction }:
   const { categories, pockets } = state;
   const toast = useToastContext();
   
-  const defaultPocket = pockets.find(p => p.is_default) || pockets[0];
+  const visiblePockets = pockets.filter(p => !p.is_default);
+  const defaultPocket = visiblePockets[0];
 
   const [formData, setFormData] = useState({
     amount: '',
@@ -32,9 +33,8 @@ export default function TransactionForm({ isOpen, onClose, editingTransaction }:
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Update form data when editingTransaction changes
   useEffect(() => {
-    const defaultPocket = pockets.find(p => p.is_default) || pockets[0];
+    const defaultPocket = visiblePockets[0];
     if (editingTransaction) {
       setFormData({
         amount: editingTransaction.amount.toString(),
@@ -62,6 +62,9 @@ export default function TransactionForm({ isOpen, onClose, editingTransaction }:
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
+    if (visiblePockets.length === 0) {
+      newErrors.pocket_id = 'Please create a pocket first.';
+    }
     if (!formData.amount || parseFloat(formData.amount) <= 0) {
       newErrors.amount = 'Suma trebuie să fie mai mare de 0';
     }
@@ -247,12 +250,12 @@ export default function TransactionForm({ isOpen, onClose, editingTransaction }:
               id="pocket"
               value={formData.pocket_id}
               onChange={(e) => setFormData({ ...formData, pocket_id: e.target.value })}
-              disabled={loading}
+              disabled={loading || visiblePockets.length === 0}
               className={`w-full px-4 py-3 border rounded-xl focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent ${
                 errors.pocket_id ? 'border-red-300' : 'border-gray-200'
-              } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+              } ${loading || visiblePockets.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-              {pockets.map(pocket => (
+              {visiblePockets.map(pocket => (
                 <option key={pocket.id} value={pocket.id}>
                   {pocket.name}
                 </option>
@@ -323,7 +326,7 @@ export default function TransactionForm({ isOpen, onClose, editingTransaction }:
             <Button
               type="submit"
               loading={loading}
-              disabled={loading}
+              disabled={loading || visiblePockets.length === 0}
               fullWidth
             >
               {loading ? (

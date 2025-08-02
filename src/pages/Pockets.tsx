@@ -19,6 +19,8 @@ export default function PocketsPage() {
   const [isTransferFormOpen, setIsTransferFormOpen] = useState(false);
   const [editingPocket, setEditingPocket] = useState<Pocket | undefined>(undefined);
 
+  const visiblePockets = pockets.filter(p => !p.is_default);
+
   const handleAddClick = () => {
     setEditingPocket(undefined);
     setIsPocketFormOpen(true);
@@ -65,7 +67,7 @@ export default function PocketsPage() {
       />
       <div className="p-4 md:p-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {pockets.map(pocket => (
+          {visiblePockets.map(pocket => (
             <Card key={pocket.id} onClick={() => handleEditClick(pocket)} className="cursor-pointer hover:shadow-lg transition-shadow">
               <div className="flex justify-between items-start">
                 <div>
@@ -90,7 +92,7 @@ export default function PocketsPage() {
           ))}
         </div>
 
-        {pockets.length === 0 && (
+        {visiblePockets.length === 0 && (
           <div className="text-center py-16">
             <p className="text-gray-500">{t('pockets.noPockets')}</p>
             <Button onClick={handleAddClick} className="mt-4">

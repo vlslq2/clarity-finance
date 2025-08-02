@@ -22,3 +22,8 @@ This document outlines the steps taken to implement the "Pockets" (or Accounts/W
 - [x] Update the Dashboard to display balances per pocket and a total balance.
 - [ ] Update the Reports page to allow filtering by pocket.
 - [ ] Ensure all UI components are responsive and provide good user feedback (loading states, errors).
+
+## Phase 4: UX Improvement - Hide Default Pocket
+- [ ] **Goal:** Hide the backend-only "General" pocket from the UI to align with standard UX patterns in budgeting apps.
+- [ ] **Frontend:** Filter out any pocket where `is_default === true` from all lists and dropdowns (`PocketsPage`, `Dashboard`, `TransactionForm`, `TransferForm`).
+- [ ] **Onboarding Logic:** Add a check to the `TransactionForm` to prevent transaction creation if the user has no visible pockets, prompting them to create one first.

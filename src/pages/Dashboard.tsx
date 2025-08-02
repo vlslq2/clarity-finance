@@ -11,8 +11,10 @@ export default function Dashboard() {
   const { state } = useApp();
   const { transactions, budgets, categories, pockets } = state;
 
-  // Calculate total balance from all pockets
-  const totalBalance = pockets.reduce((sum, p) => sum + p.balance, 0);
+  const visiblePockets = pockets.filter(p => !p.is_default);
+
+  // Calculate total balance from visible pockets
+  const totalBalance = visiblePockets.reduce((sum, p) => sum + p.balance, 0);
 
   // Calculate current month's data
   const now = new Date();
@@ -79,20 +81,22 @@ export default function Dashboard() {
         </Card>
 
         {/* Pockets List */}
-        <Card>
-          <h3 className="text-lg font-semibold mb-4">{t('nav.pockets')}</h3>
-          <div className="space-y-3">
-            {pockets.map(pocket => (
-              <div key={pocket.id} className="flex items-center justify-between">
-                <div className="flex items-center">
-                  <Wallet size={18} className="mr-3 text-gray-500" />
-                  <span className="font-medium">{pocket.name}</span>
+        {visiblePockets.length > 0 && (
+          <Card>
+            <h3 className="text-lg font-semibold mb-4">{t('nav.pockets')}</h3>
+            <div className="space-y-3">
+              {visiblePockets.map(pocket => (
+                <div key={pocket.id} className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <Wallet size={18} className="mr-3 text-gray-500" />
+                    <span className="font-medium">{pocket.name}</span>
+                  </div>
+                  <span className="font-semibold">{pocket.balance.toFixed(2)} RON</span>
                 </div>
-                <span className="font-semibold">{pocket.balance.toFixed(2)} RON</span>
-              </div>
-            ))}
-          </div>
-        </Card>
+              ))}
+            </div>
+          </Card>
+        )}
 
         {/* Top Spending Categories */}
         {topCategories.length > 0 && (
