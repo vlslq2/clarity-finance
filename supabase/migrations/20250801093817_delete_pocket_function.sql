@@ -7,27 +7,46 @@ SECURITY DEFINER
 AS $$
 DECLARE
     v_user_id uuid;
-    v_default_pocket_id bigint;
+    v_pocket_to_delete public.pockets;
+    v_new_default_pocket_id bigint;
 BEGIN
-    -- Get the user_id from the pocket being deleted
-    SELECT user_id INTO v_user_id FROM public.pockets WHERE id = pocket_id_to_delete;
+    -- Get the user_id and details from the pocket being deleted
+    SELECT * INTO v_pocket_to_delete FROM public.pockets WHERE id = pocket_id_to_delete;
+    v_user_id := v_pocket_to_delete.user_id;
 
-    -- Find the user's default pocket
-    SELECT id INTO v_default_pocket_id FROM public.pockets WHERE user_id = v_user_id AND is_default = true;
+    -- If the pocket to be deleted is the default one
+    IF v_pocket_to_delete.is_default THEN
+        -- Find another pocket to set as the new default
+        SELECT id INTO v_new_default_pocket_id 
+        FROM public.pockets 
+        WHERE user_id = v_user_id AND id != pocket_id_to_delete
+        ORDER BY created_at
+        LIMIT 1;
 
-    -- Ensure a default pocket exists
-    IF v_default_pocket_id IS NULL THEN
-        RAISE EXCEPTION 'No default pocket found for user.';
+        -- If no other pocket is available, we can't delete the last one
+        IF v_new_default_pocket_id IS NULL THEN
+            RAISE EXCEPTION 'Cannot delete the last remaining pocket.';
+        END IF;
+
+        -- Update the new pocket to be the default
+        UPDATE public.pockets 
+        SET is_default = true 
+        WHERE id = v_new_default_pocket_id;
+    ELSE
+        -- If we are not deleting the default pocket, we will reassign to the existing default
+        SELECT id INTO v_new_default_pocket_id
+        FROM public.pockets
+        WHERE user_id = v_user_id AND is_default = true;
+
+        -- This should ideally not happen if every user has a default pocket
+        IF v_new_default_pocket_id IS NULL THEN
+            RAISE EXCEPTION 'No default pocket found to reassign transactions to.';
+        END IF;
     END IF;
 
-    -- Prevent deleting the default pocket itself
-    IF pocket_id_to_delete = v_default_pocket_id THEN
-        RAISE EXCEPTION 'Cannot delete the default pocket.';
-    END IF;
-
-    -- Re-assign transactions to the default pocket
+    -- Re-assign transactions to the new default pocket
     UPDATE public.transactions
-    SET pocket_id = v_default_pocket_id
+    SET pocket_id = v_new_default_pocket_id
     WHERE pocket_id = pocket_id_to_delete;
 
     -- Delete the now-empty pocket

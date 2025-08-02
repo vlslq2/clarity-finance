@@ -75,7 +75,10 @@ Deno.serve(async (req) => {
         });
       }
       case 'DELETE': { // Delete a pocket
-        const { id } = await req.json();
+        const body = await req.json();
+        const { id } = body;
+        console.log('Attempting to delete pocket with ID:', id);
+        console.log('Request body:', body);
 
         if (!id) {
           throw new Error('Pocket ID is required for deletion.');

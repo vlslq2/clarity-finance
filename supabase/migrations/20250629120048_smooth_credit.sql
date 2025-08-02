@@ -10,6 +10,10 @@ BEGIN
     COALESCE(NEW.raw_user_meta_data->>'full_name', NEW.email)
   );
 
+  -- Create a default "General" pocket for the new user
+  INSERT INTO public.pockets (user_id, name, balance, is_default)
+  VALUES (NEW.id, 'General', 0, true);
+
   -- Create default expense categories in Romanian
   INSERT INTO public.categories (user_id, name, icon, color, type) VALUES
     (NEW.id, 'Mâncare și restaurante', 'utensils', '#ef4444', 'expense'),
