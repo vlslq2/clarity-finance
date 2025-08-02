@@ -4,12 +4,19 @@ import { useToastContext } from '../context/ToastContext';
 import { api } from '../lib/supabase';
 
 export function useData() {
-  const { dispatch } = useApp();
+  const { state, dispatch } = useApp();
   const toast = useToastContext();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const loadData = async () => {
+      // If we already have categories, we assume all data is loaded.
+      // This prevents re-fetching on every component re-render.
+      if (state.categories.length > 0) {
+        setLoading(false);
+        return;
+      }
+
       try {
         setLoading(true);
 
@@ -70,7 +77,7 @@ export function useData() {
     };
 
     loadData();
-  }, [dispatch, toast]);
+  }, [dispatch, toast, state.categories.length]);
 
   return { loading };
 }
