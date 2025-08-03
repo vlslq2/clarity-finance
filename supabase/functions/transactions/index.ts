@@ -1,6 +1,4 @@
-
 import { createClient, SupabaseClient } from 'npm:@supabase/supabase-js@2'
-import { Transaction as AppTransaction } from '../../../src/types/index.ts';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -20,13 +18,13 @@ interface Transaction {
   recurring_id?: string
 }
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    const supabaseClient = createClient(
+    const supabaseClient: SupabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       {
@@ -72,7 +70,7 @@ Deno.serve(async (req) => {
   }
 })
 
-async function handleGet(supabaseClient: SupabaseClient, userId: string, searchParams: URLSearchParams, action: string) {
+async function handleGet(supabaseClient: SupabaseClient, userId: string, searchParams: URLSearchParams, action: string): Promise<Response> {
   switch (action) {
     case 'summary':
       return await getTransactionSummary(supabaseClient, userId, searchParams)
@@ -81,7 +79,7 @@ async function handleGet(supabaseClient: SupabaseClient, userId: string, searchP
   }
 }
 
-async function getTransactions(supabaseClient: SupabaseClient, userId: string, searchParams: URLSearchParams) {
+async function getTransactions(supabaseClient: SupabaseClient, userId: string, searchParams: URLSearchParams): Promise<Response> {
   let query = supabaseClient
     .from('transactions')
     .select(`*, categories (*), pockets (*)`)
@@ -99,7 +97,7 @@ async function getTransactions(supabaseClient: SupabaseClient, userId: string, s
   })
 }
 
-async function getTransactionSummary(supabaseClient: SupabaseClient, userId: string, searchParams: URLSearchParams) {
+async function getTransactionSummary(supabaseClient: SupabaseClient, userId: string, searchParams: URLSearchParams): Promise<Response> {
   const monthDate = searchParams.get('month') || new Date().toISOString().split('T')[0]
   const startDate = `${monthDate.substring(0, 7)}-01`
   const endDate = new Date(new Date(startDate).getFullYear(), new Date(startDate).getMonth() + 1, 0).toISOString().split('T')[0]
@@ -113,13 +111,13 @@ async function getTransactionSummary(supabaseClient: SupabaseClient, userId: str
 
   if (error) throw error
 
-  const totalIncome = data
-    .filter((t: AppTransaction) => t.type === 'income')
-    .reduce((sum: number, t: AppTransaction) => sum + t.amount, 0)
+  const totalIncome = (data as Transaction[])
+    .filter((t: Transaction) => t.type === 'income')
+    .reduce((sum: number, t: Transaction) => sum + t.amount, 0)
 
-  const totalExpenses = data
-    .filter((t: AppTransaction) => t.type === 'expense')
-    .reduce((sum: number, t: AppTransaction) => sum + Math.abs(t.amount), 0)
+  const totalExpenses = (data as Transaction[])
+    .filter((t: Transaction) => t.type === 'expense')
+    .reduce((sum: number, t: Transaction) => sum + Math.abs(t.amount), 0)
 
   const summary = {
     total_income: totalIncome,
@@ -133,7 +131,7 @@ async function getTransactionSummary(supabaseClient: SupabaseClient, userId: str
   })
 }
 
-async function handlePost(supabaseClient: SupabaseClient, userId: string, req: Request, _action: string) {
+async function handlePost(supabaseClient: SupabaseClient, userId: string, req: Request, _action: string): Promise<Response> {
   const transaction: Transaction = await req.json()
 
   const { data, error } = await supabaseClient
@@ -157,7 +155,7 @@ async function handlePost(supabaseClient: SupabaseClient, userId: string, req: R
   })
 }
 
-async function handlePut(supabaseClient: SupabaseClient, userId: string, req: Request, _action: string) {
+async function handlePut(supabaseClient: SupabaseClient, userId: string, req: Request, _action: string): Promise<Response> {
   const newTransaction: Transaction = await req.json()
   
   if (!newTransaction.id) {
@@ -173,11 +171,13 @@ async function handlePut(supabaseClient: SupabaseClient, userId: string, req: Re
 
   if (fetchError) throw fetchError;
 
+  const oldTyped = oldTransaction as Transaction;
+
   // Revert the old transaction amount from the old pocket
-  const oldAmountChange = oldTransaction.type === 'income' ? -oldTransaction.amount : oldTransaction.amount;
-  if (oldTransaction.pocket_id) {
+  const oldAmountChange = oldTyped.type === 'income' ? -oldTyped.amount : oldTyped.amount;
+  if (oldTyped.pocket_id) {
     const { error: revertRpcError } = await supabaseClient.rpc('update_pocket_balance', {
-      pocket_id_to_update: oldTransaction.pocket_id,
+      pocket_id_to_update: oldTyped.pocket_id,
       amount_change: oldAmountChange,
     })
     if (revertRpcError) throw revertRpcError;
@@ -207,7 +207,7 @@ async function handlePut(supabaseClient: SupabaseClient, userId: string, req: Re
   })
 }
 
-async function handleDelete(supabaseClient: SupabaseClient, userId: string, searchParams: URLSearchParams, _action: string) {
+async function handleDelete(supabaseClient: SupabaseClient, userId: string, searchParams: URLSearchParams, _action: string): Promise<Response> {
   const id = searchParams.get('id')
   
   if (!id) {
@@ -222,12 +222,14 @@ async function handleDelete(supabaseClient: SupabaseClient, userId: string, sear
     .single()
 
   if (fetchError) throw fetchError;
+  
+  const typedTransaction = transactionToDelete as Transaction;
 
   // Revert the transaction amount from its pocket
-  if (transactionToDelete.pocket_id) {
-    const amountChange = transactionToDelete.type === 'income' ? -transactionToDelete.amount : transactionToDelete.amount;
+  if (typedTransaction.pocket_id) {
+    const amountChange = typedTransaction.type === 'income' ? -typedTransaction.amount : typedTransaction.amount;
     const { error: rpcError } = await supabaseClient.rpc('update_pocket_balance', {
-      pocket_id_to_update: transactionToDelete.pocket_id,
+      pocket_id_to_update: typedTransaction.pocket_id,
       amount_change: amountChange,
     })
     if (rpcError) throw rpcError;

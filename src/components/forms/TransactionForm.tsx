@@ -40,7 +40,7 @@ export default function TransactionForm({ isOpen, onClose, editingTransaction }:
         amount: editingTransaction.amount.toString(),
         description: editingTransaction.description,
         category_id: editingTransaction.category,
-        pocket_id: editingTransaction.pocketId || defaultPocket?.id || '',
+        pocket_id: editingTransaction.pocket_id || defaultPocket?.id || '',
         type: editingTransaction.type,
         date: editingTransaction.date.toISOString().split('T')[0]
       });
@@ -110,8 +110,8 @@ export default function TransactionForm({ isOpen, onClose, editingTransaction }:
         dispatch({ type: 'UPDATE_TRANSACTION', payload: {
           ...updatedTransaction,
           date: new Date(updatedTransaction.date),
-          category: updatedTransaction.category_id,
-          pocketId: updatedTransaction.pocket_id
+          category_id: updatedTransaction.category_id,
+          pocket_id: updatedTransaction.pocket_id
         }});
         toast.success('Tranzacția a fost actualizată cu succes');
       } else {
@@ -119,8 +119,8 @@ export default function TransactionForm({ isOpen, onClose, editingTransaction }:
         dispatch({ type: 'ADD_TRANSACTION', payload: {
           ...newTransaction,
           date: new Date(newTransaction.date),
-          category: newTransaction.category_id,
-          pocketId: newTransaction.pocket_id
+          category_id: newTransaction.category_id,
+          pocket_id: newTransaction.pocket_id
         }});
         toast.success('Tranzacția a fost adăugată cu succes');
       }

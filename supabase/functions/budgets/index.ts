@@ -1,4 +1,4 @@
-import { createClient } from 'npm:@supabase/supabase-js@2'
+import { createClient, SupabaseClient } from 'npm:@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,13 +15,29 @@ interface Budget {
   is_active: boolean
 }
 
-Deno.serve(async (req) => {
+interface Category {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  type: 'income' | 'expense';
+}
+
+interface BudgetWithCategory extends Budget {
+  categories: Category | null;
+}
+
+interface TransactionAmount {
+    amount: number;
+}
+
+Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    const supabaseClient = createClient(
+    const supabaseClient: SupabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
       {
@@ -59,14 +75,14 @@ Deno.serve(async (req) => {
         })
     }
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: (error as Error).message }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
   }
 })
 
-async function handleGet(supabaseClient: any, userId: string, searchParams: URLSearchParams, action: string) {
+async function handleGet(supabaseClient: SupabaseClient, userId: string, searchParams: URLSearchParams, action: string): Promise<Response> {
   if (action === 'summary') {
     return await getBudgetSummaries(supabaseClient, userId)
   }
@@ -74,7 +90,7 @@ async function handleGet(supabaseClient: any, userId: string, searchParams: URLS
   return await getBudgets(supabaseClient, userId, searchParams)
 }
 
-async function getBudgets(supabaseClient: any, userId: string, searchParams: URLSearchParams) {
+async function getBudgets(supabaseClient: SupabaseClient, userId: string, searchParams: URLSearchParams): Promise<Response> {
   let query = supabaseClient
     .from('budgets')
     .select(`
@@ -105,7 +121,7 @@ async function getBudgets(supabaseClient: any, userId: string, searchParams: URL
   })
 }
 
-async function getBudgetSummaries(supabaseClient: any, userId: string) {
+async function getBudgetSummaries(supabaseClient: SupabaseClient, userId: string): Promise<Response> {
   const { data: budgets, error } = await supabaseClient
     .from('budgets')
     .select(`
@@ -122,19 +138,23 @@ async function getBudgetSummaries(supabaseClient: any, userId: string) {
 
   if (error) throw error
 
-  // Calculate spent amounts for each budget
   const budgetSummaries = await Promise.all(
-    budgets.map(async (budget: any) => {
-      const { data: transactions } = await supabaseClient
+    (budgets as BudgetWithCategory[]).map(async (budget: BudgetWithCategory) => {
+      const now = new Date();
+      const startDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+
+      const { data: transactions, error: transError } = await supabaseClient
         .from('transactions')
         .select('amount')
         .eq('category_id', budget.category_id)
         .eq('user_id', userId)
         .eq('type', 'expense')
-        .gte('date', budget.start_date)
+        .gte('date', startDate)
 
-      const spent = transactions?.reduce((sum: number, t: any) => sum + Math.abs(parseFloat(t.amount)), 0) || 0
-      const progress = (spent / parseFloat(budget.amount)) * 100
+      if (transError) throw transError;
+
+      const spent = transactions?.reduce((sum: number, t: TransactionAmount) => sum + Math.abs(t.amount), 0) || 0
+      const progress = (spent / budget.amount) * 100
 
       return {
         ...budget,
@@ -150,7 +170,7 @@ async function getBudgetSummaries(supabaseClient: any, userId: string) {
   })
 }
 
-async function handlePost(supabaseClient: any, userId: string, req: Request) {
+async function handlePost(supabaseClient: SupabaseClient, userId: string, req: Request): Promise<Response> {
   const budget: Budget = await req.json()
   
   const { data, error } = await supabaseClient
@@ -178,7 +198,7 @@ async function handlePost(supabaseClient: any, userId: string, req: Request) {
   })
 }
 
-async function handlePut(supabaseClient: any, userId: string, req: Request) {
+async function handlePut(supabaseClient: SupabaseClient, userId: string, req: Request): Promise<Response> {
   const budget: Budget = await req.json()
   
   if (!budget.id) {
@@ -209,7 +229,7 @@ async function handlePut(supabaseClient: any, userId: string, req: Request) {
   })
 }
 
-async function handleDelete(supabaseClient: any, userId: string, searchParams: URLSearchParams) {
+async function handleDelete(supabaseClient: SupabaseClient, userId: string, searchParams: URLSearchParams): Promise<Response> {
   const id = searchParams.get('id')
   
   if (!id) {
