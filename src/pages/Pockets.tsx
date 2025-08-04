@@ -59,16 +59,12 @@ export default function PocketsPage() {
         title={t('pockets.title')}
         action={
           <div className="flex space-x-2">
-            <Button onClick={() => setIsTransferFormOpen(true)} variant="secondary" size="sm" className="hidden md:flex">
+            <Button onClick={() => setIsTransferFormOpen(true)} variant="secondary" size="sm">
               <ArrowRightLeft size={16} className="mr-2" />
               {t('pockets.transfer')}
             </Button>
-            <Button onClick={handleAddClick} size="sm" className="hidden md:flex">
-              <Plus size={16} className="mr-2" />
-              {t('pockets.addPocket')}
-            </Button>
-            <Button onClick={handleAddClick} size="icon" className="md:hidden">
-              <Plus size={16} />
+            <Button onClick={handleAddClick} size="sm">
+              Adauga
             </Button>
           </div>
         }
@@ -125,8 +121,7 @@ export default function PocketsPage() {
             <h3 className="text-lg font-semibold text-gray-600 mb-2">{t('pockets.noPockets')}</h3>
             <p className="text-gray-500 mb-6">{t('pockets.createFirstPocket')}</p>
             <Button onClick={handleAddClick}>
-              <Plus size={16} className="mr-2" />
-              {t('pockets.addPocket')}
+              Adauga
             </Button>
           </Card>
         )}
