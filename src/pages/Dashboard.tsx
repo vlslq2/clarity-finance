@@ -1,11 +1,11 @@
-
 import { useApp } from '../context/AppContext';
 import Card from '../components/Card';
 import Header from '../components/Header';
-import { TrendingUp, TrendingDown, Wallet } from 'lucide-react';
+import { TrendingUp, TrendingDown } from 'lucide-react';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { t } from '../i18n';
 import { getCategoryEmoji } from '../utils/categoryIcons';
+import { getPocketIcon } from '../utils/pocketIcons';
 
 export default function Dashboard() {
   const { state } = useApp();
@@ -65,14 +65,14 @@ export default function Dashboard() {
               <div className="text-center">
                 <div className="flex items-center justify-center mb-2">
                   <TrendingUp className="text-green-600 mr-2" size={20} />
-                  <span className="text-sm text-gray-600">{t('common.income')} (This Month)</span>
+                  <span className="text-sm text-gray-600">{t('common.income')}</span>
                 </div>
                 <p className="text-xl font-semibold text-green-600">{totalIncome.toFixed(2)} RON</p>
               </div>
               <div className="text-center">
                 <div className="flex items-center justify-center mb-2">
                   <TrendingDown className="text-red-600 mr-2" size={20} />
-                  <span className="text-sm text-gray-600">{t('common.expense')} (This Month)</span>
+                  <span className="text-sm text-gray-600">{t('common.expense')}</span>
                 </div>
                 <p className="text-xl font-semibold text-red-600">{totalExpenses.toFixed(2)} RON</p>
               </div>
@@ -85,15 +85,18 @@ export default function Dashboard() {
           <Card>
             <h3 className="text-lg font-semibold mb-4">{t('nav.pockets')}</h3>
             <div className="space-y-3">
-              {visiblePockets.map(pocket => (
-                <div key={pocket.id} className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <Wallet size={18} className="mr-3 text-gray-500" />
-                    <span className="font-medium">{pocket.name}</span>
+              {visiblePockets.map(pocket => {
+                const Icon = getPocketIcon(pocket.icon || 'Wallet');
+                return (
+                  <div key={pocket.id} className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Icon size={18} className="mr-3 text-gray-500" />
+                      <span className="font-medium">{pocket.name}</span>
+                    </div>
+                    <span className="font-semibold">{pocket.balance.toFixed(2)} RON</span>
                   </div>
-                  <span className="font-semibold">{pocket.balance.toFixed(2)} RON</span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </Card>
         )}

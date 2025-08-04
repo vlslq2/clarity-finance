@@ -6,6 +6,7 @@ import { X } from 'lucide-react';
 import { api } from '../../lib/supabase';
 import { t } from '../../i18n';
 import { Pocket } from '../../types';
+import { pocketIcons } from '../../utils/pocketIcons';
 
 interface PocketFormProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ export default function PocketForm({ isOpen, onClose, editingPocket }: PocketFor
   const [formData, setFormData] = useState({
     name: '',
     balance: '',
+    icon: 'Wallet',
   });
   
   const [loading, setLoading] = useState(false);
@@ -30,11 +32,13 @@ export default function PocketForm({ isOpen, onClose, editingPocket }: PocketFor
       setFormData({
         name: editingPocket.name,
         balance: editingPocket.balance.toString(),
+        icon: editingPocket.icon || 'Wallet',
       });
     } else {
       setFormData({
         name: '',
         balance: '',
+        icon: 'Wallet',
       });
     }
     setError('');
@@ -123,6 +127,24 @@ export default function PocketForm({ isOpen, onClose, editingPocket }: PocketFor
               className="w-full px-4 py-3 border border-gray-200 rounded-xl"
               placeholder="0.00"
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Icon
+            </label>
+            <div className="grid grid-cols-8 gap-2">
+              {pocketIcons.map(({ name, icon: Icon }) => (
+                <button
+                  key={name}
+                  type="button"
+                  onClick={() => setFormData({ ...formData, icon: name })}
+                  className={`p-3 rounded-xl border-2 ${formData.icon === name ? 'border-black' : 'border-gray-200'}`}
+                >
+                  <Icon size={24} />
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="flex space-x-3 pt-4">

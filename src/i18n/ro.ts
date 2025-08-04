@@ -30,7 +30,7 @@ export const ro = {
     date: 'Data',
     type: 'Tip',
     income: 'Venit',
-    expense: 'Cheltuială',
+    expense: 'Cheltuit',
     active: 'Activ',
     inactive: 'Inactiv',
     total: 'Total',

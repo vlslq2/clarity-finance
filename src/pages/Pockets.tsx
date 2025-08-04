@@ -11,6 +11,7 @@ import { api } from '../lib/supabase';
 import { useToastContext } from '../context/ToastContext';
 import { Pocket } from '../types';
 import FAB from '../components/FAB';
+import { getPocketIcon } from '../utils/pocketIcons';
 
 export default function PocketsPage() {
   const { state, dispatch } = useApp();
@@ -74,18 +75,24 @@ export default function PocketsPage() {
         <div className="space-y-3">
           {visiblePockets.map(pocket => {
             const isDeleting = deletingId === pocket.id;
+            const Icon = getPocketIcon(pocket.icon || 'Wallet');
             return (
               <Card key={pocket.id} padding="sm" className="transition-all duration-200 hover:shadow-md">
                 <div className="flex items-center justify-between">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-semibold text-gray-900 truncate pr-2">{pocket.name}</h3>
-                      <p className="text-lg font-bold flex-shrink-0 text-gray-800">
-                        {pocket.balance.toFixed(2)} RON
-                      </p>
+                  <div className="flex items-center flex-1 min-w-0">
+                    <div className="w-10 h-10 rounded-lg flex items-center justify-center mr-3 flex-shrink-0 bg-gray-100">
+                      <Icon size={20} className="text-gray-600" />
                     </div>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-sm text-gray-600 truncate">{t('pockets.currentBalance')}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-semibold text-gray-900 truncate pr-2">{pocket.name}</h3>
+                        <p className="text-lg font-bold flex-shrink-0 text-gray-800">
+                          {pocket.balance.toFixed(2)} RON
+                        </p>
+                      </div>
+                      <div className="flex items-center justify-between mt-1">
+                        <span className="text-sm text-gray-600 truncate">{t('pockets.currentBalance')}</span>
+                      </div>
                     </div>
                   </div>
                   <div className="flex space-x-1 ml-3 flex-shrink-0">
@@ -120,7 +127,7 @@ export default function PocketsPage() {
               <Plus size={48} className="mx-auto" />
             </div>
             <h3 className="text-lg font-semibold text-gray-600 mb-2">{t('pockets.noPockets')}</h3>
-            <p className="text-gray-500 mb-6">{t('pockets.createFirstPocket')}</p>
+            
             <Button onClick={handleAddClick}>
               <Plus size={16} className="mr-2" />
               Adauga
