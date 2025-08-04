@@ -1,83 +1,75 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useApp } from '../context/AppContext';
 import { useToastContext } from '../context/ToastContext';
 import { api } from '../lib/supabase';
+import { Transaction, Budget, RecurringTransaction, Pocket, Category } from '../types';
 
 export function useData() {
-  const { state, dispatch } = useApp();
+  const { dispatch } = useApp();
   const toast = useToastContext();
   const [loading, setLoading] = useState(true);
 
+  const loadData = useCallback(async () => {
+    try {
+      setLoading(true);
+
+      // Fetch all data in parallel for better performance
+      const [categories, transactions, budgetSummaries, recurring, pockets] = await Promise.all([
+        api.categories.getAll(),
+        api.transactions.getAll(),
+        api.budgets.getSummaries(), // Use the correct endpoint for summaries
+        api.recurring.getAll(),
+        api.pockets.getAll()
+      ]);
+
+      // Process and dispatch categories
+      dispatch({ type: 'SET_CATEGORIES', payload: categories as Category[] });
+
+      // Process and dispatch transactions
+      const formattedTransactions = (transactions as any[]).map((t) => ({
+        ...t,
+        date: new Date(t.date),
+        category: t.category_id,
+        pocketId: t.pocket_id
+      }));
+      dispatch({ type: 'SET_TRANSACTIONS', payload: formattedTransactions as Transaction[] });
+
+      // Process and dispatch budgets using data from summaries
+      const formattedBudgets = (budgetSummaries as any[]).map((b) => ({
+        id: b.id,
+        categoryId: b.category_id,
+        limit: parseFloat(b.amount),
+        spent: b.spent_amount, // Use the backend-calculated spent amount
+        period: b.period,
+        category: b.categories // Pass along nested category info
+      }));
+      dispatch({ type: 'SET_BUDGETS', payload: formattedBudgets as Budget[] });
+
+      // Process and dispatch recurring transactions
+      const formattedRecurring = (recurring as any[]).map((r) => ({
+        ...r,
+        nextDate: new Date(r.next_date),
+        category: r.category_id,
+        isActive: r.is_active
+      }));
+      dispatch({ type: 'SET_RECURRING', payload: formattedRecurring as RecurringTransaction[] });
+
+      // Process and dispatch pockets
+      dispatch({ type: 'SET_POCKETS', payload: pockets as Pocket[] });
+
+    } catch (error: any) {
+      
+      toast.error('Nu s-au putut încărca datele', 'Verifică conexiunea și încearcă din nou');
+    } finally {
+      setLoading(false);
+    }
+  }, [dispatch, toast]);
+
   useEffect(() => {
-    const loadData = async () => {
-      // If we already have categories, we assume all data is loaded.
-      // This prevents re-fetching on every component re-render.
-      if (state.categories.length > 0) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-
-        // Load categories first (needed for other data)
-        const categories = await api.categories.getAll();
-        dispatch({ type: 'SET_CATEGORIES', payload: categories });
-
-        // Load transactions
-        const transactions = await api.transactions.getAll();
-        const formattedTransactions = transactions.map((t: any) => ({
-          ...t,
-          date: new Date(t.date),
-          category: t.category_id,
-          pocketId: t.pocket_id
-        }));
-        dispatch({ type: 'SET_TRANSACTIONS', payload: formattedTransactions });
-
-        // Load budgets with proper formatting
-        const budgets = await api.budgets.getAll();
-        const formattedBudgets = budgets.map((b: any) => {
-          // Calculate spent amount from transactions
-          const spent = formattedTransactions
-            .filter((t: any) => t.category === b.category_id && t.type === 'expense')
-            .reduce((sum: number, t: any) => sum + Math.abs(t.amount), 0);
-
-          return {
-            id: b.id,
-            categoryId: b.category_id,
-            limit: parseFloat(b.amount),
-            spent: spent,
-            period: b.period,
-            start_date: b.start_date,
-            is_active: b.is_active
-          };
-        });
-        dispatch({ type: 'SET_BUDGETS', payload: formattedBudgets });
-
-        // Load recurring transactions
-        const recurring = await api.recurring.getAll();
-        const formattedRecurring = recurring.map((r: any) => ({
-          ...r,
-          nextDate: new Date(r.next_date),
-          category: r.category_id,
-          isActive: r.is_active
-        }));
-        dispatch({ type: 'SET_RECURRING', payload: formattedRecurring });
-
-        // Load pockets
-        const pockets = await api.pockets.getAll();
-        dispatch({ type: 'SET_POCKETS', payload: pockets });
-
-      } catch (error: any) {
-        console.error('Failed to load data:', error);
-        toast.error('Nu s-au putut încărca datele', 'Verifică conexiunea și încearcă din nou');
-      } finally {
-        setLoading(false);
-      }
-    };
-
     loadData();
-  }, [dispatch, toast, state.categories.length]);
+    // This effect runs once on mount, ensuring data is fresh on initial load.
+    // For subsequent refreshes, we can implement a pull-to-refresh or a manual refresh button.
+  }, [loadData]);
 
-  return { loading };
+  return { loading, refreshData: loadData };
 }

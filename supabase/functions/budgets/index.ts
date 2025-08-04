@@ -15,22 +15,6 @@ interface Budget {
   is_active: boolean
 }
 
-interface Category {
-  id: string;
-  name: string;
-  icon: string;
-  color: string;
-  type: 'income' | 'expense';
-}
-
-interface BudgetWithCategory extends Budget {
-  categories: Category | null;
-}
-
-interface TransactionAmount {
-    amount: number;
-}
-
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -122,50 +106,25 @@ async function getBudgets(supabaseClient: SupabaseClient, userId: string, search
 }
 
 async function getBudgetSummaries(supabaseClient: SupabaseClient, userId: string): Promise<Response> {
-  const { data: budgets, error } = await supabaseClient
-    .from('budgets')
-    .select(`
-      *,
-      categories (
-        id,
-        name,
-        icon,
-        color,
-        type
-      )
-    `)
-    .eq('user_id', userId)
+  const { data, error } = await supabaseClient.rpc('get_budget_summaries', { p_user_id: userId })
 
   if (error) throw error
 
-  const budgetSummaries = await Promise.all(
-    (budgets as BudgetWithCategory[]).map(async (budget: BudgetWithCategory) => {
-      const now = new Date();
-      const startDate = new Date(now.getFullYear(), now.getMonth(), 1).toISOString().split('T')[0];
+  // The new function returns a slightly different structure, so we need to map it to the expected format
+  const formattedData = (data as any[]).map(item => ({
+    ...item,
+    categories: {
+      id: item.category_id,
+      name: item.category_name,
+      icon: item.category_icon,
+      color: item.category_color,
+      type: item.category_type
+    },
+    progress_percentage: (item.spent_amount / item.amount) * 100,
+    status: (item.spent_amount / item.amount) > 1 ? 'over_budget' : (item.spent_amount / item.amount) > 0.8 ? 'near_limit' : 'on_track'
+  }));
 
-      const { data: transactions, error: transError } = await supabaseClient
-        .from('transactions')
-        .select('amount')
-        .eq('category_id', budget.category_id)
-        .eq('user_id', userId)
-        .eq('type', 'expense')
-        .gte('date', startDate)
-
-      if (transError) throw transError;
-
-      const spent = transactions?.reduce((sum: number, t: TransactionAmount) => sum + Math.abs(t.amount), 0) || 0
-      const progress = (spent / budget.amount) * 100
-
-      return {
-        ...budget,
-        spent_amount: spent,
-        progress_percentage: progress,
-        status: progress > 100 ? 'over_budget' : progress > 80 ? 'near_limit' : 'on_track'
-      }
-    })
-  )
-
-  return new Response(JSON.stringify(budgetSummaries), {
+  return new Response(JSON.stringify(formattedData), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   })
 }

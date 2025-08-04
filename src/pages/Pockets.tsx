@@ -91,7 +91,7 @@ export default function PocketsPage() {
                         </p>
                       </div>
                       <div className="flex items-center justify-between mt-1">
-                        <span className="text-sm text-gray-600 truncate">{t('pockets.currentBalance')}</span>
+                        
                       </div>
                     </div>
                   </div>

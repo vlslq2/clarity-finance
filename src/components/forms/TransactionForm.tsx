@@ -127,7 +127,7 @@ export default function TransactionForm({ isOpen, onClose, editingTransaction }:
 
       onClose();
     } catch (err: any) {
-      console.error('Transaction error:', err);
+      
       toast.error('Nu s-a putut salva tranzacția', err.message);
     } finally {
       setLoading(false);

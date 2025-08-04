@@ -280,12 +280,12 @@ export const ro = {
   // Pockets
   pockets: {
     title: 'Portofele',
-    addPocket: 'Adaugă Portofel',
-    editPocket: 'Editează Portofelul',
+    addPocket: 'Adaugă portofel',
+    editPocket: 'Editează portofelul',
     currentBalance: 'Sold Curent',
     noPockets: 'Nu ai încă niciun portofel.',
-    pocketName: 'Nume Portofel',
-    initialBalance: 'Sold Inițial',
+    pocketName: 'Nume portofel',
+    initialBalance: 'Sold inițial',
     createFirstPocket: 'Creează Primul Tău Portofel',
     transfer: 'Transferă',
     transferBetweenPockets: 'Transfer între Portofele',
