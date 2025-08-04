@@ -15,6 +15,23 @@ interface Budget {
   is_active: boolean
 }
 
+// This interface matches the structure returned by our SQL function
+interface BudgetSummary {
+  id: number;
+  user_id: string;
+  category_id: number;
+  amount: number;
+  period: string;
+  start_date: string;
+  is_active: boolean;
+  created_at: string;
+  spent_amount: number;
+  category_name: string;
+  category_icon: string;
+  category_color: string;
+  category_type: string;
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -111,7 +128,7 @@ async function getBudgetSummaries(supabaseClient: SupabaseClient, userId: string
   if (error) throw error
 
   // The new function returns a slightly different structure, so we need to map it to the expected format
-  const formattedData = (data as any[]).map(item => ({
+  const formattedData = (data as BudgetSummary[]).map((item: BudgetSummary) => ({
     ...item,
     categories: {
       id: item.category_id,

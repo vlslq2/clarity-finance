@@ -133,7 +133,7 @@ export default function PocketForm({ isOpen, onClose, editingPocket }: PocketFor
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Icon
             </label>
-            <div className="grid grid-cols-8 gap-2">
+            <div className="grid grid-cols-4 gap-2">
               {pocketIcons.map(({ name, icon: Icon }) => (
                 <button
                   key={name}
