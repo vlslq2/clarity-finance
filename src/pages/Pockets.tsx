@@ -64,6 +64,7 @@ export default function PocketsPage() {
               {t('pockets.transfer')}
             </Button>
             <Button onClick={handleAddClick} size="sm">
+              <Plus size={16} className="mr-2" />
               Adauga
             </Button>
           </div>
@@ -121,6 +122,7 @@ export default function PocketsPage() {
             <h3 className="text-lg font-semibold text-gray-600 mb-2">{t('pockets.noPockets')}</h3>
             <p className="text-gray-500 mb-6">{t('pockets.createFirstPocket')}</p>
             <Button onClick={handleAddClick}>
+              <Plus size={16} className="mr-2" />
               Adauga
             </Button>
           </Card>
