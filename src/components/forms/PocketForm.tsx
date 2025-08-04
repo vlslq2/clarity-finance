@@ -139,9 +139,13 @@ export default function PocketForm({ isOpen, onClose, editingPocket }: PocketFor
                   key={name}
                   type="button"
                   onClick={() => setFormData({ ...formData, icon: name })}
-                  className={`p-3 rounded-xl border-2 ${formData.icon === name ? 'border-black' : 'border-gray-200'}`}
+                  className={`flex items-center justify-center p-3 rounded-xl border-2 transition-colors ${
+                    formData.icon === name 
+                      ? 'border-black bg-gray-100' 
+                      : 'border-gray-200 hover:bg-gray-50'
+                  }`}
                 >
-                  <Icon size={24} />
+                  <Icon size={24} className={formData.icon === name ? 'text-black' : 'text-gray-500'} />
                 </button>
               ))}
             </div>
