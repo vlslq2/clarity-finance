@@ -10,6 +10,7 @@ import TransferForm from '../components/forms/TransferForm';
 import { api } from '../lib/supabase';
 import { useToastContext } from '../context/ToastContext';
 import { Pocket } from '../types';
+import FAB from '../components/FAB';
 
 export default function PocketsPage() {
   const { state, dispatch } = useApp();
@@ -58,13 +59,16 @@ export default function PocketsPage() {
         title={t('pockets.title')}
         action={
           <div className="flex space-x-2">
-            <Button onClick={() => setIsTransferFormOpen(true)} variant="secondary" size="sm">
+            <Button onClick={() => setIsTransferFormOpen(true)} variant="secondary" size="sm" className="hidden md:flex">
               <ArrowRightLeft size={16} className="mr-2" />
               {t('pockets.transfer')}
             </Button>
-            <Button onClick={handleAddClick} size="sm">
+            <Button onClick={handleAddClick} size="sm" className="hidden md:flex">
               <Plus size={16} className="mr-2" />
               {t('pockets.addPocket')}
+            </Button>
+            <Button onClick={handleAddClick} size="icon" className="md:hidden">
+              <Plus size={16} />
             </Button>
           </div>
         }
@@ -128,6 +132,8 @@ export default function PocketsPage() {
         )}
       </div>
       
+      <FAB onClick={handleAddClick} className="md:hidden" />
+
       <PocketForm 
         isOpen={isPocketFormOpen} 
         onClose={() => setIsPocketFormOpen(false)} 
