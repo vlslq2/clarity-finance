@@ -22,7 +22,7 @@ export default function PocketsPage() {
   const [editingPocket, setEditingPocket] = useState<Pocket | undefined>(undefined);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  const visiblePockets = pockets;
+  const visiblePockets = pockets.filter(p => !p.is_default);
 
   const handleAddClick = () => {
     setEditingPocket(undefined);

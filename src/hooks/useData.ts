@@ -56,7 +56,11 @@ export function useData() {
       dispatch({ type: 'SET_RECURRING', payload: formattedRecurring as RecurringTransaction[] });
 
       const pockets = await api.pockets.getAll();
-      dispatch({ type: 'SET_POCKETS', payload: pockets as Pocket[] });
+      const formattedPockets = (pockets as any[]).map((p) => ({
+        ...p,
+        id: String(p.id)
+      }));
+      dispatch({ type: 'SET_POCKETS', payload: formattedPockets as Pocket[] });
 
     } catch (error: any) {
       toast.error('A apărut o eroare la încărcarea datelor', error.message);
