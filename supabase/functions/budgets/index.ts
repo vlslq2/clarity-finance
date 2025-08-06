@@ -17,9 +17,9 @@ interface Budget {
 
 // This interface matches the structure returned by our SQL function
 interface BudgetSummary {
-  id: number;
+  id: string;
   user_id: string;
-  category_id: number;
+  category_id: string;
   amount: number;
   period: string;
   start_date: string;

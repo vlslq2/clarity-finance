@@ -303,7 +303,7 @@ export const api = {
     getAll: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not authenticated");
-      const { data, error } = await supabase.from('pockets').select('*').eq('user_id', user.id);
+      const { data, error } = await supabase.rpc('get_pockets', { p_user_id: user.id });
       if (error) throw error;
       return data;
     },
