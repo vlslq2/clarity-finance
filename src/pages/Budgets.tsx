@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useApp } from '../context/AppContext';
 import { useToastContext } from '../context/ToastContext';
 import Header from '../components/Header';
@@ -8,39 +8,31 @@ import FAB from '../components/FAB';
 import BudgetForm from '../components/forms/BudgetForm';
 import { Plus, Edit2, Trash2, Target } from 'lucide-react';
 import { api } from '../lib/supabase';
-import { t } from '../i18n';
 import { getCategoryEmoji } from '../utils/categoryIcons';
+import { Budget } from '../types';
 
 export default function Budgets() {
   const { state, dispatch } = useApp();
-  const { budgets, categories, transactions } = state;
+  const { budgets } = state;
   const toast = useToastContext();
   const [showAddModal, setShowAddModal] = useState(false);
-  const [editingBudget, setEditingBudget] = useState<any>(null);
+  const [editingBudget, setEditingBudget] = useState<Budget | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
-  // Calculate actual spending for each budget
-  const budgetsWithSpending = budgets.map(budget => {
-    const category = categories.find(c => c.id === budget.categoryId);
-    const actualSpent = transactions
-      .filter(t => t.category === budget.categoryId && t.type === 'expense')
-      .reduce((sum, t) => sum + Math.abs(t.amount), 0);
-    
-    const progress = (actualSpent / budget.limit) * 100;
+  const budgetsWithProgress = budgets.map(budget => {
+    const progress = (budget.spent / budget.limit) * 100;
     const isOverBudget = progress > 100;
     const isNearLimit = progress > 80 && progress <= 100;
 
     return {
       ...budget,
-      category,
-      actualSpent,
       progress,
       isOverBudget,
       isNearLimit
     };
   });
 
-  const handleEditBudget = (budget: any) => {
+  const handleEditBudget = (budget: Budget) => {
     setEditingBudget(budget);
     setShowAddModal(true);
   };
@@ -100,7 +92,7 @@ export default function Budgets() {
       <div className="p-4 md:p-8">
         {/* Budget List */}
         <div className="space-y-4">
-          {budgetsWithSpending.map(budget => {
+          {budgetsWithProgress.map(budget => {
             if (!budget.category) return null;
             const isDeleting = deletingId === budget.id;
             
@@ -127,7 +119,7 @@ export default function Budgets() {
                         </h3>
                         <div className="text-right flex-shrink-0">
                           <p className={`text-lg font-bold ${getStatusColor(budget)}`}>
-                            {budget.actualSpent.toFixed(0)} / {budget.limit.toFixed(0)} RON
+                            {budget.spent.toFixed(0)} / {budget.limit.toFixed(0)} RON
                           </p>
                         </div>
                       </div>

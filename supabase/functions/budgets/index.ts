@@ -127,21 +127,7 @@ async function getBudgetSummaries(supabaseClient: SupabaseClient, userId: string
 
   if (error) throw error
 
-  // The new function returns a slightly different structure, so we need to map it to the expected format
-  const formattedData = (data as BudgetSummary[]).map((item: BudgetSummary) => ({
-    ...item,
-    categories: {
-      id: item.category_id,
-      name: item.category_name,
-      icon: item.category_icon,
-      color: item.category_color,
-      type: item.category_type
-    },
-    progress_percentage: (item.spent_amount / item.amount) * 100,
-    status: (item.spent_amount / item.amount) > 1 ? 'over_budget' : (item.spent_amount / item.amount) > 0.8 ? 'near_limit' : 'on_track'
-  }));
-
-  return new Response(JSON.stringify(formattedData), {
+  return new Response(JSON.stringify(data), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
   })
 }

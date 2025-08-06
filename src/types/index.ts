@@ -24,6 +24,7 @@ export interface Budget {
   limit: number;
   spent: number;
   period: 'monthly' | 'weekly';
+  category: Category;
 }
 
 export interface RecurringTransaction {

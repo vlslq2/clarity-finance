@@ -4,6 +4,7 @@ import { useToastContext } from '../context/ToastContext';
 import { api } from '../lib/supabase';
 import { Transaction, Budget, RecurringTransaction, Pocket, Category } from '../types';
 
+// Custom hook for fetching and managing application data
 export function useData() {
   const { dispatch } = useApp();
   const toast = useToastContext();
@@ -35,7 +36,13 @@ export function useData() {
         limit: parseFloat(b.amount),
         spent: b.spent_amount,
         period: b.period,
-        category: b.categories
+        category: {
+          id: b.category_id,
+          name: b.category_name,
+          icon: b.category_icon,
+          color: b.category_color,
+          type: b.category_type
+        }
       }));
       dispatch({ type: 'SET_BUDGETS', payload: formattedBudgets as Budget[] });
 
