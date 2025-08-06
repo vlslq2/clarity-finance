@@ -4,6 +4,7 @@ CREATE OR REPLACE FUNCTION public.delete_pocket_and_reassign_transactions(
 RETURNS void
 LANGUAGE plpgsql
 SECURITY INVOKER
+SET search_path = public
 AS $$
 DECLARE
     v_user_id uuid;

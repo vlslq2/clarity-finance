@@ -17,7 +17,10 @@ RETURNS TABLE(
     category_icon text,
     category_color text,
     category_type text
-) AS $$
+) 
+LANGUAGE plpgsql
+SET search_path = public
+AS $$
 BEGIN
     RETURN QUERY
     WITH monthly_expenses AS (
@@ -57,4 +60,4 @@ BEGIN
     WHERE
         b.user_id = p_user_id;
 END;
-$$ LANGUAGE plpgsql;
+$$;

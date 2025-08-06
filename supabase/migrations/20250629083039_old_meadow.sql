@@ -56,8 +56,8 @@ BEGIN
       ON recurring_transactions
       FOR ALL
       TO authenticated
-      USING (auth.uid() = user_id)
-      WITH CHECK (auth.uid() = user_id);
+      USING (current_user_id() = user_id)
+      WITH CHECK (current_user_id() = user_id);
   END IF;
 END $$;
 
@@ -66,7 +66,10 @@ CREATE OR REPLACE FUNCTION calculate_next_date(
   input_date date,
   frequency text
 )
-RETURNS date AS $$
+RETURNS date 
+LANGUAGE plpgsql
+SET search_path = public
+AS $$
 BEGIN
   CASE frequency
     WHEN 'daily' THEN
@@ -81,11 +84,14 @@ BEGIN
       RETURN input_date + interval '1 month';
   END CASE;
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
 -- Function to process due recurring transactions
 CREATE OR REPLACE FUNCTION process_recurring_transactions()
-RETURNS integer AS $$
+RETURNS integer 
+LANGUAGE plpgsql
+SET search_path = public
+AS $$
 DECLARE
   recurring_record record;
   transactions_created integer := 0;
@@ -134,7 +140,7 @@ BEGIN
   
   RETURN transactions_created;
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
 -- Function to get upcoming recurring transactions
 CREATE OR REPLACE FUNCTION get_upcoming_recurring(
@@ -152,7 +158,10 @@ RETURNS TABLE(
   frequency text,
   next_date date,
   days_until integer
-) AS $$
+) 
+LANGUAGE plpgsql
+SET search_path = public
+AS $$
 BEGIN
   -- Check if categories table exists
   IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'categories') THEN
@@ -195,14 +204,17 @@ BEGIN
     ORDER BY rt.next_date ASC;
   END IF;
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
 -- Function to pause/resume recurring transaction
 CREATE OR REPLACE FUNCTION toggle_recurring_transaction(
   p_recurring_id uuid,
   p_user_id uuid
 )
-RETURNS boolean AS $$
+RETURNS boolean 
+LANGUAGE plpgsql
+SET search_path = public
+AS $$
 DECLARE
   current_status boolean;
 BEGIN
@@ -223,7 +235,7 @@ BEGIN
   
   RETURN true;
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_recurring_transactions_user_id ON recurring_transactions(user_id);
@@ -233,7 +245,10 @@ CREATE INDEX IF NOT EXISTS idx_recurring_transactions_category_id ON recurring_t
 
 -- Function to add foreign key constraint to categories when the table exists
 CREATE OR REPLACE FUNCTION add_recurring_categories_fk()
-RETURNS void AS $$
+RETURNS void 
+LANGUAGE plpgsql
+SET search_path = public
+AS $$
 BEGIN
   -- Add foreign key constraint if categories table exists and constraint doesn't exist
   IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'categories') THEN
@@ -247,7 +262,7 @@ BEGIN
     END IF;
   END IF;
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
 -- Try to add the foreign key constraint (will succeed if categories table exists)
 SELECT add_recurring_categories_fk();

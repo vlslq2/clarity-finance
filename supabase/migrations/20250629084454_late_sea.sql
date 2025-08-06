@@ -40,14 +40,14 @@ CREATE POLICY "Users can read own data"
   ON users
   FOR SELECT
   TO authenticated
-  USING (auth.uid() = id);
+  USING (current_user_id() = id);
 
 CREATE POLICY "Users can update own data"
   ON users
   FOR UPDATE
   TO authenticated
-  USING (auth.uid() = id)
-  WITH CHECK (auth.uid() = id);
+  USING (current_user_id() = id)
+  WITH CHECK (current_user_id() = id);
 
 -- Create categories table if it doesn't exist
 CREATE TABLE IF NOT EXISTS categories (
@@ -69,8 +69,8 @@ CREATE POLICY "Users can manage their own categories"
   ON categories
   FOR ALL
   TO authenticated
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
+  USING (current_user_id() = user_id)
+  WITH CHECK (current_user_id() = user_id);
 
 -- Create indexes
 CREATE INDEX IF NOT EXISTS idx_categories_user_id ON categories(user_id);
@@ -97,8 +97,8 @@ CREATE POLICY "Users can manage their own transactions"
   ON transactions
   FOR ALL
   TO authenticated
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
+  USING (current_user_id() = user_id)
+  WITH CHECK (current_user_id() = user_id);
 
 -- Create indexes for transactions
 CREATE INDEX IF NOT EXISTS idx_transactions_user_id ON transactions(user_id);
@@ -126,8 +126,8 @@ CREATE POLICY "Users can manage their own budgets"
   ON budgets
   FOR ALL
   TO authenticated
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
+  USING (current_user_id() = user_id)
+  WITH CHECK (current_user_id() = user_id);
 
 -- Create indexes for budgets
 CREATE INDEX IF NOT EXISTS idx_budgets_user_id ON budgets(user_id);
@@ -153,15 +153,19 @@ CREATE POLICY "Users can manage their own preferences"
   ON user_preferences
   FOR ALL
   TO authenticated
-  USING (auth.uid() = user_id)
-  WITH CHECK (auth.uid() = user_id);
+  USING (current_user_id() = user_id)
+  WITH CHECK (current_user_id() = user_id);
 
 -- Create index for user preferences
 CREATE INDEX IF NOT EXISTS idx_user_preferences_user_id ON user_preferences(user_id);
 
 -- Create or replace the handle_new_user function
 CREATE OR REPLACE FUNCTION handle_new_user()
-RETURNS trigger AS $$
+RETURNS trigger 
+LANGUAGE plpgsql 
+SECURITY DEFINER
+SET search_path = public
+AS $$
 BEGIN
   -- Insert user record
   INSERT INTO users (id, email, full_name)
@@ -192,7 +196,7 @@ BEGIN
 
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$;
 
 -- Create trigger for new user signup
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
@@ -202,12 +206,15 @@ CREATE TRIGGER on_auth_user_created
 
 -- Create updated_at trigger function
 CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS trigger AS $$
+RETURNS trigger 
+LANGUAGE plpgsql
+SET search_path = public
+AS $$
 BEGIN
   NEW.updated_at = now();
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$;
 
 -- Add updated_at triggers to all tables
 CREATE TRIGGER update_users_updated_at

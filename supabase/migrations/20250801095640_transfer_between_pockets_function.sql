@@ -6,6 +6,7 @@ CREATE OR REPLACE FUNCTION public.transfer_between_pockets(
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
     v_user_id uuid := auth.uid();
