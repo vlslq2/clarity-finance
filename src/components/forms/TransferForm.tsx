@@ -5,7 +5,7 @@ import Button from '../Button';
 import { X } from 'lucide-react';
 import { api } from '../../lib/supabase';
 import { t } from '../../i18n';
-
+import { Pocket } from '../../types';
 
 interface TransferFormProps {
   isOpen: boolean;
@@ -50,25 +50,40 @@ export default function TransferForm({ isOpen, onClose }: TransferFormProps) {
       return;
     }
 
+    const amount = parseFloat(formData.amount);
+    if (isNaN(amount) || amount <= 0) {
+      toast.error("Please enter a valid amount.");
+      setLoading(false);
+      return;
+    }
+
+    const fromPocket = pockets.find(p => p.id === formData.from_pocket_id);
+    if (fromPocket && fromPocket.balance < amount) {
+      toast.error("Insufficient funds in the source pocket.");
+      setLoading(false);
+      return;
+    }
+
     try {
       await api.pockets.transfer(
         formData.from_pocket_id,
         formData.to_pocket_id,
-        parseFloat(formData.amount)
+        amount
       );
       
-      // Refetch all data to ensure UI is consistent
-      const updatedPockets = await api.pockets.getAll();
-      dispatch({ type: 'SET_POCKETS', payload: updatedPockets });
-      const updatedTransactions = await api.transactions.getAll();
-      dispatch({ type: 'SET_TRANSACTIONS', payload: updatedTransactions.map((t: any) => ({...t, date: new Date(t.date)})) });
+      // Optimistically update the local state
+      const fromPocket = pockets.find(p => p.id === formData.from_pocket_id) as Pocket;
+      const toPocket = pockets.find(p => p.id === formData.to_pocket_id) as Pocket;
+
+      dispatch({ type: 'UPDATE_POCKET', payload: { ...fromPocket, balance: fromPocket.balance - amount } });
+      dispatch({ type: 'UPDATE_POCKET', payload: { ...toPocket, balance: toPocket.balance + amount } });
 
       toast.success('Transfer successful');
       onClose();
     } catch (err: any) {
-      const error = err instanceof Error ? err : new Error(String(err));
-      setError(error.message);
-      toast.error('Transfer failed', error.message);
+      const errorMessage = err.message || 'An unexpected error occurred.';
+      setError(errorMessage);
+      toast.error('Transfer failed', errorMessage);
     } finally {
       setLoading(false);
     }
@@ -104,7 +119,7 @@ export default function TransferForm({ isOpen, onClose }: TransferFormProps) {
               required
               className="w-full px-4 py-3 border border-gray-200 rounded-xl"
             >
-              {visiblePockets.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+              {visiblePockets.map(p => <option key={p.id} value={p.id}>{p.name} ({p.balance.toFixed(2)} RON)</option>)}
             </select>
           </div>
 
@@ -119,7 +134,7 @@ export default function TransferForm({ isOpen, onClose }: TransferFormProps) {
               required
               className="w-full px-4 py-3 border border-gray-200 rounded-xl"
             >
-              {visiblePockets.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+              {visiblePockets.map(p => <option key={p.id} value={p.id}>{p.name} ({p.balance.toFixed(2)} RON)</option>)}
             </select>
           </div>
 
