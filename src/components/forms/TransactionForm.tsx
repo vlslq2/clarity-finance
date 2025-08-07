@@ -68,9 +68,6 @@ export default function TransactionForm({ isOpen, onClose, editingTransaction }:
     if (!formData.amount || parseFloat(formData.amount) <= 0) {
       newErrors.amount = 'Suma trebuie să fie mai mare de 0';
     }
-    if (!formData.description.trim()) {
-      newErrors.description = 'Descrierea este obligatorie';
-    }
     if (!formData.category_id) {
       newErrors.category_id = 'Categoria este obligatorie';
     }
@@ -257,7 +254,7 @@ export default function TransactionForm({ isOpen, onClose, editingTransaction }:
             >
               {visiblePockets.map(pocket => (
                 <option key={pocket.id} value={pocket.id}>
-                  {pocket.name}
+                  {pocket.name} ({pocket.balance.toFixed(2)} RON)
                 </option>
               ))}
             </select>
