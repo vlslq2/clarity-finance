@@ -13,16 +13,14 @@ export function useData() {
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
-      console.log("--- Starting data load ---");
 
-      console.log("Fetching categories...");
+      // Fetch data sequentially to ensure the app is robust
+      // A failure in one area should not prevent others from loading.
+
       const categories = await api.categories.getAll();
-      console.log("Fetched categories:", categories);
       dispatch({ type: 'SET_CATEGORIES', payload: categories as Category[] });
 
-      console.log("Fetching transactions...");
       const transactions = await api.transactions.getAll();
-      console.log("Fetched transactions:", transactions);
       const formattedTransactions = (transactions as any[]).map((t) => ({
         ...t,
         date: new Date(t.date),
@@ -31,9 +29,7 @@ export function useData() {
       }));
       dispatch({ type: 'SET_TRANSACTIONS', payload: formattedTransactions as Transaction[] });
 
-      console.log("Fetching budget summaries...");
       const budgetSummaries = await api.budgets.getSummaries();
-      console.log("Fetched budget summaries:", budgetSummaries);
       const formattedBudgets = (budgetSummaries as any[]).map((b) => ({
         id: b.id,
         categoryId: b.category_id,
@@ -50,9 +46,7 @@ export function useData() {
       }));
       dispatch({ type: 'SET_BUDGETS', payload: formattedBudgets as Budget[] });
 
-      console.log("Fetching recurring transactions...");
       const recurring = await api.recurring.getAll();
-      console.log("Fetched recurring transactions:", recurring);
       const formattedRecurring = (recurring as any[]).map((r) => ({
         ...r,
         nextDate: new Date(r.next_date),
@@ -61,20 +55,14 @@ export function useData() {
       }));
       dispatch({ type: 'SET_RECURRING', payload: formattedRecurring as RecurringTransaction[] });
 
-      console.log("Fetching pockets...");
       const pockets = await api.pockets.getAll();
-      console.log("Fetched pockets:", pockets);
       const formattedPockets = (pockets as any[]).map((p) => ({
         ...p,
         id: String(p.id)
       }));
-      console.log("Formatted pockets:", formattedPockets);
       dispatch({ type: 'SET_POCKETS', payload: formattedPockets as Pocket[] });
-      
-      console.log("--- Data load complete ---");
 
     } catch (error: any) {
-      console.error('--- FULL ERROR DURING DATA LOAD ---', error);
       toast.error('A apărut o eroare la încărcarea datelor', error.message);
     } finally {
       setLoading(false);

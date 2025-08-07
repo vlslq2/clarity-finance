@@ -44,7 +44,7 @@ export const api = {
     getAll: async (params?: Record<string, string>) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not authenticated");
-      let query = supabase.from('transactions').select('*, categories(*)').eq('user_id', user.id);
+      let query = supabase.from('transactions').select('*, categories(*)').eq('user_id', user.id).order('date', { ascending: false });
       if (params) {
         Object.entries(params).forEach(([key, value]) => {
           query = query.eq(key, value);
